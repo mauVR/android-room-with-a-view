@@ -16,10 +16,13 @@ package com.example.android.roomwordssample;
  * limitations under the License.
  */
 
+import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.annotation.NonNull;
+
+import java.io.Serializable;
 
 /**
  * A basic class representing an entity that is a row in a one-column database table.
@@ -33,19 +36,33 @@ import androidx.annotation.NonNull;
  */
 
 @Entity(tableName = "word_table")
-public class Word {
+public class Word implements Serializable {
 
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
+    private Integer id;
+
     @NonNull
     @ColumnInfo(name = "word")
     private String mWord;
 
-    public Word(@NonNull String word) {
+    public Word(Integer id,@NonNull String word) {
+        this.id = id;
+        this.mWord = word;
+    }
+
+    @NonNull
+    public void setWord(String word) {
         this.mWord = word;
     }
 
     @NonNull
     public String getWord() {
         return this.mWord;
+    }
+
+    @NonNull
+    public Integer getId() {
+        return this.id;
     }
 }

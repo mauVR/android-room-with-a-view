@@ -26,9 +26,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.widget.Toolbar;
+
 import android.view.View;
 import android.widget.Toast;
 
+import java.io.Serializable;
 import java.util.List;
 
 
@@ -46,13 +48,15 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // Get a new or existing ViewModel from the ViewModelProvider.
+        mWordViewModel = ViewModelProviders.of(this).get(WordViewModel.class);
+
         RecyclerView recyclerView = findViewById(R.id.recyclerview);
-        final WordListAdapter adapter = new WordListAdapter(this);
+        final WordListAdapter adapter = new WordListAdapter(this, mWordViewModel,this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Get a new or existing ViewModel from the ViewModelProvider.
-        mWordViewModel = ViewModelProviders.of(this).get(WordViewModel.class);
+
 
         // Add an observer on the LiveData returned by getAlphabetizedWords.
         // The onChanged() method fires when the observed data changes and the activity is
@@ -69,23 +73,57 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, NewWordActivity.class);
-                startActivityForResult(intent, NEW_WORD_ACTIVITY_REQUEST_CODE);
+                final String accion = "INSERTAR";
+                startIntent(accion, null);
             }
         });
     }
 
+    public static final int EDIT_WORD_ACTIVITY_REQUEST_CODE = 2;
+    private static final String action = "INSERTAR";
+    public void startIntent(String accion, Word word){
+        Intent intent = new Intent(MainActivity.this, NewWordActivity.class);
+        if(accion.equals(action)){//se va a insertar
+            startActivityForResult(intent, NEW_WORD_ACTIVITY_REQUEST_CODE);
+        }else{//se va a editar
+            intent.putExtra("com.example.android.roomwordssample.EXTRA_PALABRA", (Serializable) word);
+            startActivityForResult(intent, EDIT_WORD_ACTIVITY_REQUEST_CODE);
+        }
+
+    }
+
+
+
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == NEW_WORD_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
-            Word word = new Word(data.getStringExtra(NewWordActivity.EXTRA_REPLY));
+
+        if(resultCode == RESULT_OK){
+            if(requestCode == NEW_WORD_ACTIVITY_REQUEST_CODE){
+                Word word = new Word(null,data.getStringExtra(NewWordActivity.EXTRA_REPLY));
+                mWordViewModel.insert(word);
+            }else if(requestCode == EDIT_WORD_ACTIVITY_REQUEST_CODE){
+                Word wordOld = (Word) data.getSerializableExtra("com.example.android.roomwordssample.EXTRA_PALABRA_OLD");
+                Word wordNew = (Word) data.getSerializableExtra("com.example.android.roomwordssample.EXTRA_PALABRA_NEW");
+                Word[] words = {wordOld,wordNew};
+                mWordViewModel.update(words);
+            }
+        }else {
+            Toast.makeText(
+                    getApplicationContext(),
+                    R.string.empty_not_saved,
+                    Toast.LENGTH_SHORT).show();
+        }
+
+
+        /*if (requestCode == NEW_WORD_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
+            Word word = new Word(null,data.getStringExtra(NewWordActivity.EXTRA_REPLY));
             mWordViewModel.insert(word);
         } else {
             Toast.makeText(
                     getApplicationContext(),
                     R.string.empty_not_saved,
                     Toast.LENGTH_LONG).show();
-        }
+        }*/
     }
 }

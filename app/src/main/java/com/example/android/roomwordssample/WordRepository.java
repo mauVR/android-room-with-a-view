@@ -19,6 +19,7 @@ package com.example.android.roomwordssample;
 import android.app.Application;
 import androidx.lifecycle.LiveData;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import java.util.List;
 
@@ -66,6 +67,46 @@ class WordRepository {
         @Override
         protected Void doInBackground(final Word... params) {
             mAsyncTaskDao.insert(params[0]);
+            Log.d("WordRepository", "insert->"+params[0].getWord());
+            return null;
+        }
+    }
+
+    void delete(Word word) {
+        new deleteAsyncTask(mWordDao).execute(word);
+    }
+    private static class deleteAsyncTask extends AsyncTask<Word, Void, Void> {
+
+        private WordDao mAsyncTaskDao;
+
+        deleteAsyncTask(WordDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final Word... params) {
+            mAsyncTaskDao.delete(params[0]);
+            Log.d("WordRepository", "delete->"+params[0].getWord());
+            return null;
+        }
+    }
+
+    void update(Word[] words) {
+        Log.d("WordRepository", "1Update->"+words[0].getWord()+" to "+words[1].getWord());
+        new updateAsyncTask(mWordDao).execute(words); //se manda la nueva
+    }
+    private static class updateAsyncTask extends AsyncTask<Word, Void, Void> {
+
+        private WordDao mAsyncTaskDao;
+
+        updateAsyncTask(WordDao dao) {
+            mAsyncTaskDao = dao;
+        }
+
+        @Override
+        protected Void doInBackground(final Word... params) {
+            Log.d("WordRepository", "Update->"+params[0].getWord()+" to "+params[1].getWord());
+            mAsyncTaskDao.update(params[1]);
             return null;
         }
     }

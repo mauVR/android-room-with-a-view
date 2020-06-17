@@ -24,6 +24,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import java.io.Serializable;
+
 /**
  * Activity for entering a word.
  */
@@ -34,11 +36,21 @@ public class NewWordActivity extends AppCompatActivity {
 
     private EditText mEditWordView;
 
+    private boolean edit;
+    private Word word;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_word);
         mEditWordView = findViewById(R.id.edit_word);
+        if(getIntent().hasExtra("com.example.android.roomwordssample.EXTRA_PALABRA")){
+            word = (Word) getIntent().getExtras().getSerializable("com.example.android.roomwordssample.EXTRA_PALABRA");
+            mEditWordView.setText(word.getWord());
+            edit = true;
+        }
+
+
 
         final Button button = findViewById(R.id.button_save);
         button.setOnClickListener(new View.OnClickListener() {
@@ -47,8 +59,15 @@ public class NewWordActivity extends AppCompatActivity {
                 if (TextUtils.isEmpty(mEditWordView.getText())) {
                     setResult(RESULT_CANCELED, replyIntent);
                 } else {
-                    String word = mEditWordView.getText().toString();
-                    replyIntent.putExtra(EXTRA_REPLY, word);
+                    String wordTXT = mEditWordView.getText().toString();
+                    if(edit){
+                        Word wordNew = new Word(word.getId(),word.getWord());
+                        wordNew.setWord(wordTXT);
+                        replyIntent.putExtra("com.example.android.roomwordssample.EXTRA_PALABRA_OLD", (Serializable) word);
+                        replyIntent.putExtra("com.example.android.roomwordssample.EXTRA_PALABRA_NEW", (Serializable) wordNew);
+                    }else{
+                        replyIntent.putExtra(EXTRA_REPLY, wordTXT);
+                    }
                     setResult(RESULT_OK, replyIntent);
                 }
                 finish();

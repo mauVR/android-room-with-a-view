@@ -92,7 +92,6 @@ class WordRepository {
     }
 
     void update(Word[] words) {
-        Log.d("WordRepository", "1Update->"+words[0].getWord()+" to "+words[1].getWord());
         new updateAsyncTask(mWordDao).execute(words); //se manda la nueva
     }
     private static class updateAsyncTask extends AsyncTask<Word, Void, Void> {
